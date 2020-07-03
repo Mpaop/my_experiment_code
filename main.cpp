@@ -1,23 +1,34 @@
 #include <iostream>
-#include "reflist/reflist.h"
+#include "reflist/linkedtree.h"
+
+template<typename T>
+void printChildren(mpaop::linkedtree::MLinkedLeaf<T> * leaf)
+{
+    std::cout << "Leaf: " << ** leaf << "\n";
+
+    if(leaf->Children().Size() != 0)
+    {
+        for(auto & child : leaf->Children())
+        {
+            printChildren(& child);
+        }
+    }
+}
 
 int main()
 {
-    mpaop::reflist::MRefList<int> list;
-    list.Push(0);
-    list.Push(1);
-    list.Pop();
-    auto * node = list.Push(2);
+    mpaop::linkedtree::MLinkedTree<int> tree;
+    auto * node = tree.Push(1);
+    node->pushChild(11);
+    auto * node2 = node->pushChild(12);
+    node2->pushChild(120);
 
-    mpaop::reflist::MRefList<int> list2;
-    list2.PushNode(* node);
-    *list2.Current() = 3;
+    tree.Push(13);
 
-    list.Remove(1);
-    list.Insert(0, 4);
-
-    for(auto & n : list) std::cout << *n << "\n";
-    for(auto & n : list2) std::cout << *n << "\n";
+    for(auto & n : tree)
+    {
+        printChildren(& n);
+    }
 
     return 0;
 }
