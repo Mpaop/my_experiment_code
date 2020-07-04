@@ -85,7 +85,7 @@ namespace mpaop::tlinkedlist
             return this[idx];
         }
 
-        T<K> * getNode(const uint32_t &idx)
+        T<K> * getNode(const uint32_t & idx)
         {
             if (m_size <= idx)
                 throw std::out_of_range("LOG: idx is out of range!");

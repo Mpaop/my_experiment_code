@@ -22,14 +22,22 @@ namespace mpaop::linkedtree
 
         MLinkedLeaf<T>(MLinkedLeaf<T> & leaf) : reflist::MNode<T>(leaf), m_parent(leaf.m_parent), m_children(leaf.m_children) {}
 
+        virtual ~MLinkedLeaf<T>()
+        {
+            for(MLinkedLeaf<T> & leaf : m_children)
+            {
+                leaf.m_parent = nullptr;
+            }
+        }
+
         auto Children() const & -> const MLinkedTree<T> & { return m_children; }
         auto Prev() & -> MLinkedLeaf<T> * { return (MLinkedLeaf<T> *)this->m_prev; }
         auto Next() & -> MLinkedLeaf<T> * { return (MLinkedLeaf<T> *)this->m_next; }
 
-        MLinkedLeaf<T> * getChild(const uint32_t & idx) const 
+        MLinkedLeaf<T> * getChild(const uint32_t & idx) 
         {
             if(m_children.Size() <= idx) throw std::out_of_range("LOG: index exceeds number of children!");
-            return m_children.getNode(idx);
+            return this->m_children.getNode(idx);
         }
 
         template<class... Args>
@@ -62,6 +70,18 @@ namespace mpaop::linkedtree
 
         void removeChild(const uint32_t & idx)
         {
+            m_children.Remove(idx);
+        }
+
+        void copyChild(const uint32_t & idx, MLinkedLeaf<T> & other)
+        {
+            MLinkedLeaf<T> *child = this->getChild(idx);
+            other.m_children.PushNode(*child);
+        }
+
+        void moveChild(const uint32_t & idx, MLinkedLeaf<T> & other)
+        {
+            copyChild(idx, other);
             m_children.Remove(idx);
         }
     };

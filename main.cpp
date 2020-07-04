@@ -23,12 +23,23 @@ int main()
     auto * node2 = node->pushChild(12);
     node2->pushChild(120);
 
-    tree.Push(13);
+    auto * node3 = tree.Push(2);
 
     for(auto & n : tree)
     {
         printChildren(& n);
     }
+
+    node2->moveChild(0, * node3);
+
+    std::cout << "-----------------------------------------\n";
+
+    for (auto &n : tree)
+    {
+        printChildren(&n);
+    }
+
+    std::cout << "-----------------------------------------\n";
 
     return 0;
 }
