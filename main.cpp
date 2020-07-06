@@ -30,11 +30,22 @@ int main()
         printChildren(& n);
     }
 
-    node2->moveChild(0, * node3);
+    node2->moveChild(0, node3);
 
     std::cout << "-----------------------------------------\n";
 
     for (auto &n : tree)
+    {
+        printChildren(&n);
+    }
+
+    std::cout << "-----------------------------------------\n";
+
+    tree.Remove(node);
+
+    std::cout << "-----------------------------------------\n";
+
+    for (auto & n : tree)
     {
         printChildren(&n);
     }

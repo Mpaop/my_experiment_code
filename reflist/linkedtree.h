@@ -73,16 +73,23 @@ namespace mpaop::linkedtree
             m_children.Remove(idx);
         }
 
-        void copyChild(const uint32_t & idx, MLinkedLeaf<T> & other)
+        void removeChild(MLinkedLeaf<T> * leaf)
         {
-            MLinkedLeaf<T> *child = this->getChild(idx);
-            other.m_children.PushNode(*child);
+            m_children.Remove(leaf);
         }
 
-        void moveChild(const uint32_t & idx, MLinkedLeaf<T> & other)
+        MLinkedLeaf<T> * copyChild(const uint32_t & idx, MLinkedLeaf<T> * other)
         {
-            copyChild(idx, other);
-            m_children.Remove(idx);
+            MLinkedLeaf<T> * child = m_children.copyNode(idx, & other->m_children);
+            child->m_parent = other;
+            return child;
+        }
+
+        MLinkedLeaf<T> * moveChild(const uint32_t & idx, MLinkedLeaf<T> * other)
+        {
+            MLinkedLeaf<T> * child = m_children.moveNode(idx, & other->m_children);
+            child->m_parent = other;
+            return child;
         }
     };
 

@@ -19,9 +19,24 @@ namespace mpaop::tlinkedlist
             return *this;
         }
 
-        bool operator!=(const TNodeIterator &it) const
+        bool operator != (const TNodeIterator & it) const
         {
             return m_ptr != it.m_ptr;
+        }
+
+        bool operator != (const T<K> * ptr) const
+        {
+            return m_ptr != ptr;
+        }
+
+        bool operator == (const TNodeIterator & it) const
+        {
+            return m_ptr == it.m_ptr;
+        }
+
+        bool operator == (const T<K> * ptr) const
+        {
+            return m_ptr == ptr;
         }
 
         T<K> & operator * () const
@@ -74,13 +89,13 @@ namespace mpaop::tlinkedlist
         TNodeIterator<T, K> begin() const { return TNodeIterator<T, K>(m_first); }
         TNodeIterator<T, K> end() const { return TNodeIterator<T, K>(nullptr); }
 
-        T<K> * operator[](const uint32_t &idx)
+        T<K> * operator[](const uint32_t & idx)
         {
             m_current = getNode(idx);
             return m_current;
         }
 
-        T<K> * moveCurrentNodeTo(const uint32_t &idx)
+        T<K> * moveCurrentNodeTo(const uint32_t & idx)
         {
             return this[idx];
         }
@@ -193,7 +208,7 @@ namespace mpaop::tlinkedlist
             return res;
         }
 
-        T<K> * InsertNode(const uint32_t &idx, T<K> & node)
+        T<K> * InsertNode(const uint32_t & idx, T<K> & node)
         {
             if (idx > m_size)
                 throw std::out_of_range("LOG: idx exceeds size of list");
@@ -221,13 +236,23 @@ namespace mpaop::tlinkedlist
             return res;
         }
 
-        void Remove(const uint32_t &idx)
+        T<K> * copyNode(const uint32_t & idx, TLinkedList<T, K> * list)
         {
-            if (idx >= m_size)
-                throw std::out_of_range("LOG: Cannot access this idx");
+            T<K> * node = getNode(idx);
+            list->PushNode(* node);
+            return node;
+        }
 
-            T<K> *node = getNode(idx);
+        T<K> * moveNode(const uint32_t & idx, TLinkedList<T, K> * list)
+        {
+            T<K> * node = copyNode(idx, list);
+            Remove(node, idx);
+            return node;
+        }
 
+private:
+        void Remove(T<K> * node, const uint32_t & idx)
+        {
             if (m_size == 1)
             {
                 m_current = m_first = m_last = nullptr;
@@ -258,6 +283,32 @@ namespace mpaop::tlinkedlist
             }
 
             --m_size;
+        }
+
+public:
+        void Remove(const uint32_t & idx)
+        {
+            if (idx >= m_size)
+                throw std::out_of_range("LOG: Cannot access this idx");
+
+            T<K> * node = getNode(idx);
+
+            Remove(node, idx);
+        }
+
+        void Remove(T<K> * node)
+        {
+            uint32_t idx = 0;
+            for(TNodeIterator<T, K> it = begin(); it != end(); ++it, ++idx)
+            {
+                if(it == node)
+                {
+                    Remove(node, idx);
+                    return;
+                }
+            }
+
+            if(idx == m_size) throw std::runtime_error("LOG: List does not contain node!");
         }
     };
 }
