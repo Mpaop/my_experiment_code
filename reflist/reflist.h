@@ -14,23 +14,6 @@ namespace mpaop::reflist
         MNode<T> * m_next;
 
     public:
-        template<class... Args>
-        MNode(MNode<T> * prev, MNode<T> * next, Args... args) : smartptr::MSharedPtr<T>(args...), m_prev(prev), m_next(next)
-        {
-            insertSelf(prev, next);
-        }
-
-        MNode(MNode<T> & n) : smartptr::MSharedPtr<T>(n.m_ptr, n.m_refCount), m_prev(nullptr), m_next(nullptr) {}
-
-        virtual ~MNode()
-        {
-            removeSelf();
-            std::cout << "Deleted node\n";
-        }
-
-        auto Prev() & -> MNode<T> * { return m_prev; }
-        auto Next() & -> MNode<T> * { return m_next; }
-
         void insertSelf(MNode<T> * prev, MNode<T> * next)
         {
             if(m_prev) m_prev->m_next = this;
@@ -56,6 +39,23 @@ namespace mpaop::reflist
             m_prev = nullptr;
             m_next = nullptr;
         }
+
+        template<class... Args>
+        MNode(MNode<T> * prev, MNode<T> * next, Args... args) : smartptr::MSharedPtr<T>(args...), m_prev(prev), m_next(next)
+        {
+            insertSelf(prev, next);
+        }
+
+        MNode(MNode<T> & n) : smartptr::MSharedPtr<T>(n.m_ptr, n.m_refCount), m_prev(nullptr), m_next(nullptr) {}
+
+        virtual ~MNode()
+        {
+            removeSelf();
+            std::cout << "Deleted node\n";
+        }
+
+        auto Prev() & -> MNode<T> * { return m_prev; }
+        auto Next() & -> MNode<T> * { return m_next; }
     };
 
     template<typename T>
