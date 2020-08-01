@@ -24,8 +24,8 @@ public:
     virtual void test() = 0;
 };
 
-#define INTERFACE(T) void init() override { pFunc = static_cast<Base::fSign>(&(T::sameNameFunc)); }; \
-                     void test() override; \
+#define INTERFACE(T) void init() override { pFunc = static_cast<Base::fSign>(& T::sameNameFunc); }; \
+                     void test() override;
 
 
 class Foo : public Base

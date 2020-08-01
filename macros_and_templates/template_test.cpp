@@ -21,14 +21,10 @@ template<typename T>
 class TempBase : public Base
 {
 public:
-    void callpFunc()
-    {
-        if(pFunc != nullptr) (this->*pFunc)();
-    }
 
     void init() override
     {
-        pFunc = static_cast<Base::fSign>(static_cast<T *>(this)->sameNameFunc);
+        pFunc = static_cast<Base::fSign>(& T::sameNameFunc);
     }
 };
 
