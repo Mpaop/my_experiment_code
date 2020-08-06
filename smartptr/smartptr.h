@@ -32,13 +32,13 @@ namespace mpaop::smartptr
             std::cout << "refCount: " << * m_refCount << "\n";
         }
 
-protected:
+    protected:
         MSharedPtr(T * p, uint32_t * ref) : m_ptr(p), m_refCount(ref)
         {
             ++(* m_refCount);
         }
 
-public:
+    public:
         virtual ~MSharedPtr()
         {
 
