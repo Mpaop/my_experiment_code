@@ -15,7 +15,7 @@ namespace mpaop::smartptr
 
     public:
         template<class... Args>
-        MSharedPtr(Args... args)
+        MSharedPtr<T>(Args... args)
         {
             m_ptr = new T(args...);
             m_refCount = new uint32_t(1);
@@ -23,7 +23,7 @@ namespace mpaop::smartptr
             std::cout << "Calling constructor\n";
         }
 
-        MSharedPtr(const MSharedPtr<T> & sp) : m_ptr(sp.m_ptr), m_refCount(sp.m_refCount)
+        explicit MSharedPtr<T>(const MSharedPtr<T> & sp) : m_ptr(sp.m_ptr), m_refCount(sp.m_refCount)
         {
             // increment reference count
             ++(* m_refCount);
@@ -33,9 +33,10 @@ namespace mpaop::smartptr
         }
 
     protected:
-        MSharedPtr(T * p, uint32_t * ref) : m_ptr(p), m_refCount(ref)
+        explicit MSharedPtr(T * p, uint32_t * ref) : m_ptr(p), m_refCount(ref)
         {
             ++(* m_refCount);
+            std::cout << "refcount incremented: " << * m_refCount << "\n";
         }
 
     public:

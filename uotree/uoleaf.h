@@ -7,7 +7,7 @@
 namespace mpaop::smartptr::uoleaf
 {
     template<typename T>
-    class MUnorderedLeaf : public smartptr::MSharedPtr<T>
+    class MUnorderedLeaf : public MSharedPtr<T>
     {
     private:
         const int32_t m_key;
@@ -130,12 +130,12 @@ namespace mpaop::smartptr::uoleaf
         }
 
         template<class... Args>
-        MUnorderedLeaf<T> * insert(const int32_t key, Args... args)
+        MUnorderedLeaf<T> insert(const int32_t key, Args... args)
         {
             if(key == this->m_key)
             {
                 m_list.Push(args...);
-                return this;
+                return * (this);
             }
 
             // should this leaf be to the left of parent?
@@ -146,11 +146,11 @@ namespace mpaop::smartptr::uoleaf
                 {
                     MUnorderedLeaf<T> * leaf = new MUnorderedLeaf<T>(key, args...);
                     this->insertAsLeftLeaf(leaf);
-                    return leaf;
+                    return * leaf;
                 }
                 else
                 {
-                    return this->m_left->insert(key, args...);
+                    return * this->m_left->insert(key, args...);
                 }
             }
             else
@@ -160,11 +160,11 @@ namespace mpaop::smartptr::uoleaf
                 {
                     MUnorderedLeaf<T> * leaf = new MUnorderedLeaf<T>(key, args...);
                     this->insertAsRightLeaf(leaf);
-                    return leaf;
+                    return * leaf;
                 }
                 else
                 {
-                    return this->m_right->insert(key, args...);
+                    return * this->m_right->insert(key, args...);
                 }
             }
         }
@@ -213,9 +213,9 @@ namespace mpaop::smartptr::uoleaf
             m_parent(nullptr), m_left(nullptr), m_right(nullptr) {}
 
         MUnorderedLeaf<T>(const MUnorderedLeaf<T> & leaf) : 
-            MSharedPtr<T>(leaf), 
-            m_key(leaf->m_key), m_list(leaf->m_list), 
-            m_parent(leaf->m_parent), m_left(leaf->m_left), m_right(leaf->m_right) {}
+            MSharedPtr<T>(leaf.m_ptr, leaf.m_refCount),
+            m_key(leaf.m_key), m_list(leaf.m_list), 
+            m_parent(leaf.m_parent), m_left(leaf.m_left), m_right(leaf.m_right) {}
 
         MUnorderedLeaf<T>(const MSharedPtr<T> & sPtr) : MSharedPtr<T>(sPtr) {}
 
@@ -227,6 +227,5 @@ namespace mpaop::smartptr::uoleaf
         
         // deleted constructors
         MUnorderedLeaf<T>() = delete;
-        MUnorderedLeaf<T>(MUnorderedLeaf &&) = delete;
     };
 }
