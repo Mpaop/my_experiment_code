@@ -1,10 +1,13 @@
+#pragma once
+
 #include "../reflist/reflist.h"
 #include "../smartptr/smartptr.h"
+#include <optional>
 
-namespace mpaop
+namespace mpaop::smartptr::uoleaf
 {
     template<typename T>
-    class MUnorderedLeaf : smartptr::MSharedPtr<T>
+    class MUnorderedLeaf : public smartptr::MSharedPtr<T>
     {
     private:
         const int32_t m_key;
@@ -14,67 +17,125 @@ namespace mpaop
         MUnorderedLeaf<T> * m_left;
         MUnorderedLeaf<T> * m_right;
 
-        void insertAs(MUnorderedLeaf<T> ** parent, MUnorderedLeaf<T> ** parentlr)
+        void insertAs(MUnorderedLeaf<T> * parent, MUnorderedLeaf<T> ** parentlr)
         {
-            m_parent = * parent;
+            m_parent = parent;
             * parentlr = this;
         }
 
-        void insertAsLeftChild(MUnorderedLeaf<T> ** parent)
+        void insertParent(MUnorderedLeaf<T> * parent)
         {
-            insertAs(*parent, & (* parent)->m_left);
+            m_parent = parent;
         }
 
-        void insertAsRightChild(MUnorderedLeaf<T> ** parent)
+        void insertAsLeftLeaf(MUnorderedLeaf<T> * leaf)
         {
-            insertAs(parent, & (* parent)->m_right);
+            leaf->insertParent(this);
+            this->m_left = leaf;
         }
+
+        void insertAsRightLeaf(MUnorderedLeaf<T> * leaf)
+        {
+            leaf->insertParent(this);
+            this->m_right = leaf;
+        }
+
+        MUnorderedLeaf<T> * findDescendantOfRightLeafWithSmallestKey()
+        {
+            if(! m_right->m_left)
+            {
+                return m_right;
+            }
+
+            MUnorderedLeaf<T> * descendant = m_right;
+            do
+            {
+                descendant = descendant->m_left;
+            } while (descendant->m_left);
+
+            return descendant;
+        }
+
+        MUnorderedLeaf<T> * findDescendantOfLeftLeafWithLargestKey()
+        {
+            if(! m_left->m_right)
+            {
+                return m_left;
+            }
+
+            MUnorderedLeaf<T> * descendant = m_left;
+            do
+            {
+                descendant = descendant->m_right;
+            } while (descendant->m_rigth);
+
+            return descendant;
+        }
+
     public:
 
-        void insert(MUnorderedLeaf<T> ** parent)
+        void countChildren(MUnorderedLeaf<T> * leaf, std::optional<int32_t> & outCount)
         {
-            if(!parent) return;
+            if(! leaf) return;
+            if(! outCount.has_value())
+            {
+                outCount = 0;
+            }
 
-            MUnorderedLeaf<T> * p = * parent;
+            if(leaf->m_left)
+            {
+                ++outCount.value();
+                countChildren(leaf->m_left, outCount);
+            }
 
-            if(p->m_key == this->m_key) return;
+            if (leaf->m_right)
+            {
+                ++outCount.value();
+                countChildren(leaf->m_right, outCount);
+            }
+        }
+
+        void insert(MUnorderedLeaf<T> * leaf)
+        {
+            if(! leaf) return;
+            else if(leaf->m_key == this->m_key) return;
 
             // should this leaf be to the left of parent?
-            if(this->m_key < p->m_key)
+            if(this->m_key < leaf->m_key)
             {
-                // if parent does not have any children simply insert
-                if(! p->m_left)
+                // if we do not have any children simply insert
+                if(! this->m_left)
                 {
-                    insertAsLeftChild(parent);
+                    insertAsLeftChild(leaf);
                     return;
                 }
                 else
                 {
-                    insert(& p->m_left);
+                    this->m_left->insert(leaf);
                 }
             }
             else
             {
-                // if parent does not have any children simply insert
-                if(! p->m_right)
+                // if we do not have any children simply insert
+                if(! this->m_right)
                 {
-                    insertAsRightChild(parent);
+                    insertAsRightChild(leaf);
                     return;
                 }
                 else
                 {
-                    insert(& p->m_right);
+                    this->m_right->insert(leaf);
                 }
             }
         }
 
         template<class... Args>
-        void insert(const int32_t key, Args... args)
+        MUnorderedLeaf<T> * insert(const int32_t key, Args... args)
         {
             if(key == this->m_key)
             {
                 m_list.Push(args...);
-                return;
+                return this;
             }
 
             // should this leaf be to the left of parent?
@@ -83,14 +144,13 @@ namespace mpaop
                 // if parent does not have any children simply insert
                 if(! this->m_left)
                 {
-                    MUnorderedLeaf<T> * leaf = new MUnorderedLeaf<T>(args...);
-                    leaf->insertAsLeftChild(& this);
-                    return;
+                    MUnorderedLeaf<T> * leaf = new MUnorderedLeaf<T>(key, args...);
+                    this->insertAsLeftLeaf(leaf);
+                    return leaf;
                 }
                 else
                 {
-                    this->m_left->insert(key, args...);
-                    return;
+                    return this->m_left->insert(key, args...);
                 }
             }
             else
@@ -98,37 +158,75 @@ namespace mpaop
                 // if parent does not have any children simply insert
                 if(! this->m_right)
                 {
-                    MUnorderedLeaf<T> * leaf = new MUnorderedLeaf<T>(args...);
-                    leaf->insertAsRightChild(& this);
-                    return;
+                    MUnorderedLeaf<T> * leaf = new MUnorderedLeaf<T>(key, args...);
+                    this->insertAsRightLeaf(leaf);
+                    return leaf;
                 }
                 else
                 {
-                    this->m_right->insert(key, args...);
-                    return;
+                    return this->m_right->insert(key, args...);
                 }
             }
         }
 
-        void removeLeaf()
+        void removeSelf()
         {
-            if(m_parent)
-            {
-
-            }
-            else
+            // if we have a parent and we have children
+            if(m_parent && (m_left || m_right))
             {
                 
             }
+            // if we only have a parent
+            else if(m_parent)
+            {
+                if(this->m_parent->m_left == this) this->m_parent->m_left = nullptr;
+                else this->m_parent->m_right = nullptr;
+            }
+            // if we only have children
+            else if(m_left || m_right)
+            {
+                // if we have multiple children
+                if(m_left && m_right)
+                {
+
+                }
+                // if we only have one child
+                if(m_left)
+                {
+                    m_left->m_parent = nullptr;
+                }
+                else
+                {
+                    m_right->m_parent = nullptr;
+                }
+            }
+
+            this->m_parent = nullptr;
+            this->m_left = nullptr;
+            this->m_right = nullptr;
         }
 
-        MUnorderedLeaf(const int32_t & key) : 
+        template<class... Args>
+        MUnorderedLeaf<T>(const int32_t & key, Args... args) : 
+            MSharedPtr<T>(args...),
             m_key(key), m_list(reflist::MRefList<T>()), 
             m_parent(nullptr), m_left(nullptr), m_right(nullptr) {}
+
+        MUnorderedLeaf<T>(const MUnorderedLeaf<T> & leaf) : 
+            MSharedPtr<T>(leaf), 
+            m_key(leaf->m_key), m_list(leaf->m_list), 
+            m_parent(leaf->m_parent), m_left(leaf->m_left), m_right(leaf->m_right) {}
+
+        MUnorderedLeaf<T>(const MSharedPtr<T> & sPtr) : MSharedPtr<T>(sPtr) {}
+
+        virtual ~MUnorderedLeaf<T>()
+        {
+            removeSelf();
+            std::cout << "Removed Self in leaf\n";
+        }
         
         // deleted constructors
-        MUnorderedLeaf() = delete;
-        MUnorderedLeaf(const MUnorderedLeaf &) = delete;
-        MUnorderedLeaf(MUnorderedLeaf &&) = delete;
+        MUnorderedLeaf<T>() = delete;
+        MUnorderedLeaf<T>(MUnorderedLeaf &&) = delete;
     };
 }
