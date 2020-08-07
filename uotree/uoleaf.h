@@ -40,7 +40,7 @@ namespace mpaop::smartptr::uoleaf
             this->m_right = leaf;
         }
 
-        MUnorderedLeaf<T> * findDescendantOfRightLeafWithSmallestKey()
+        MUnorderedLeaf<T> * findDescendantOfRightLeafLeastKey()
         {
             if(! m_right->m_left)
             {
@@ -56,7 +56,7 @@ namespace mpaop::smartptr::uoleaf
             return descendant;
         }
 
-        MUnorderedLeaf<T> * findDescendantOfLeftLeafWithLargestKey()
+        MUnorderedLeaf<T> * findDescendantOfLeftLeafGreatestKey()
         {
             if(! m_left->m_right)
             {
@@ -67,13 +67,12 @@ namespace mpaop::smartptr::uoleaf
             do
             {
                 descendant = descendant->m_right;
-            } while (descendant->m_rigth);
+            } while (descendant->m_right);
 
             return descendant;
         }
 
     public:
-
         void countChildren(MUnorderedLeaf<T> * leaf, std::optional<int32_t> & outCount)
         {
             if(! leaf) return;
@@ -92,6 +91,45 @@ namespace mpaop::smartptr::uoleaf
             {
                 ++outCount.value();
                 countChildren(leaf->m_right, outCount);
+            }
+        }
+
+        void createChildTree(MUnorderedLeaf<T> * outRoot)
+        {
+            // return null or one leaf if unable to create a tree
+            if(! m_right && ! m_left)
+            {
+                outRoot = nullptr;
+                return;
+            }
+            else if(! m_right)
+            {
+                outRoot = m_left;
+                return;
+            }
+            else if(! m_left)
+            {
+                outRoot = m_right;
+                return;
+            }
+
+            std::optional<int32_t> lChildNum = 0, rChildNum = 0;
+            countChildren(m_left, lChildNum);
+            countChildren(m_right, rChildNum);
+
+            // since we have less children on the left leaf, we bind it to the right leaf
+            if(lChildNum < rChildNum)
+            {
+                MUnorderedLeaf<T> * leaf = findDescendantOfRightLeafLeastKey();
+                leaf->insertAsLeftLeaf(m_left);
+                outRoot = m_right;
+            }
+            // since we have less children on the right leaf, we bind it to the left leaf
+            else
+            {
+                MUnorderedLeaf<T> * leaf = findDescendantOfLeftLeafGreatestKey();
+                leaf->insertAsRightLeaf(m_right);
+                outRoot = m_left;
             }
         }
 
@@ -171,39 +209,19 @@ namespace mpaop::smartptr::uoleaf
 
         void removeSelf()
         {
-            // if we have a parent and we have children
-            if(m_parent && (m_left || m_right))
-            {
-                
-            }
-            // if we only have a parent
-            else if(m_parent)
-            {
-                if(this->m_parent->m_left == this) this->m_parent->m_left = nullptr;
-                else this->m_parent->m_right = nullptr;
-            }
-            // if we only have children
-            else if(m_left || m_right)
-            {
-                // if we have multiple children
-                if(m_left && m_right)
-                {
-
-                }
-                // if we only have one child
-                if(m_left)
-                {
-                    m_left->m_parent = nullptr;
-                }
-                else
-                {
-                    m_right->m_parent = nullptr;
-                }
-            }
-
             this->m_parent = nullptr;
-            this->m_left = nullptr;
-            this->m_right = nullptr;
+            if(this->m_left)
+            {
+                this->m_left->m_parent = nullptr;
+                delete this->m_left;
+                this->m_left = nullptr;
+            }
+            if(this->m_right)
+            {
+                this->m_right->m_parent = nullptr;
+                delete this->m_right;
+                this->m_right = nullptr;
+            }
         }
 
         template<class... Args>
@@ -222,7 +240,6 @@ namespace mpaop::smartptr::uoleaf
         virtual ~MUnorderedLeaf<T>()
         {
             removeSelf();
-            std::cout << "Removed Self in leaf\n";
         }
         
         // deleted constructors

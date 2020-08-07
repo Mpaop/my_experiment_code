@@ -36,7 +36,7 @@ namespace mpaop::smartptr
         explicit MSharedPtr(T * p, uint32_t * ref) : m_ptr(p), m_refCount(ref)
         {
             ++(* m_refCount);
-            std::cout << "refcount incremented: " << * m_refCount << "\n";
+            std::cout << "refcount incremented: " << * m_refCount << " of val = " << * m_ptr << "\n";
         }
 
     public:
@@ -46,7 +46,7 @@ namespace mpaop::smartptr
             std::cout << "Calling destructor\n";
 
             --(* m_refCount);
-            std::cout << "refCount: " << * m_refCount << "\n";
+            std::cout << "refCount: " << * m_refCount << " of val = " << * m_ptr << "\n" << std::flush;
 
             if (0 == * m_refCount) cleanup();
 
