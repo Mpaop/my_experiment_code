@@ -52,5 +52,11 @@ int main()
 
     std::cout << "-----------------------------------------\n";
 
+    int_fast32_t a;
+
+    std::string s;
+    std::cin >> s;
+    
+
     return 0;
 }
