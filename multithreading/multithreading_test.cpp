@@ -3,7 +3,7 @@
 #include <memory>
 #include <mutex>
 #include "thread_guard.h"
-#include "threaded_ostream.h"
+#include "threaded_stream.h"
 
 int32_t SharedResource;
 std::mutex SRMutex;
@@ -20,7 +20,7 @@ class bg_task
     std::shared_ptr<std::string> str_;
     uint32_t accessIdx_;
 
-    public:
+public:
     bg_task(std::shared_ptr<std::string> str, uint32_t idx) : str_(str), accessIdx_(idx) {}
     bg_task(const bg_task & task) : bg_task(task.str_, task.accessIdx_) {}
     bg_task(bg_task && task) : str_(std::move(task.str_)), accessIdx_(std::move(task.accessIdx_)) {}

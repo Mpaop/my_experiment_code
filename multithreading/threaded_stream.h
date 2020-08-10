@@ -21,3 +21,21 @@ public:
 
 std::mutex threaded_ostringstream::tosMutex_ = {};
 #define tos threaded_ostringstream {}
+
+class threaded_istringstream : public std::istringstream
+{
+private:
+    static std::mutex tisMutex_;
+
+public:
+    threaded_istringstream() = default;
+
+    void operator >> (std::string & str)
+    {
+        std::lock_guard g(tisMutex_);
+        std::getline(std::cin, str);
+    }
+};
+
+std::mutex threaded_istringstream::tisMutex_ = {};
+#define tis threaded_istringstream {}

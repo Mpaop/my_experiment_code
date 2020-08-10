@@ -3,7 +3,7 @@
 #include <mutex>
 #include <chrono>
 #include "thread_guard.h"
-#include "threaded_ostream.h"
+#include "threaded_stream.h"
 
 class deadlock_obj
 {
