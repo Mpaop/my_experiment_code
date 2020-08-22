@@ -42,7 +42,6 @@ namespace mpaop::smartptr
     public:
         virtual ~MSharedPtr()
         {
-
             std::cout << "Calling destructor\n";
 
             --(* m_refCount);
