@@ -5,6 +5,15 @@ auto main() -> int
 {
     
     mpaop::smartptr::uotree::MUnorderedTree<int> tree(5, 10);
+
+    {
+        tree.insert(100, 20);
+    }
+
+    {
+        tree.insert(-1, 100);
+    }
+
     for(int32_t i = 0, j = 11; i <= 10; ++i, ++j)
     {
         std::cout << "Do Insert\n";

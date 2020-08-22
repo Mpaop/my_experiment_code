@@ -27,16 +27,12 @@ namespace mpaop::smartptr
         {
             // increment reference count
             ++(* m_refCount);
-
-            std::cout << "Calling copy constructor\n";
-            std::cout << "refCount: " << * m_refCount << "\n";
         }
 
     protected:
         explicit MSharedPtr(T * p, uint32_t * ref) : m_ptr(p), m_refCount(ref)
         {
             ++(* m_refCount);
-            std::cout << "refcount incremented: " << * m_refCount << " of val = " << * m_ptr << "\n";
         }
 
     public:
