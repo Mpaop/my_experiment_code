@@ -3,6 +3,7 @@
 #include<string>
 #include<map>
 #include<vector>
+#include <queue>
 
 namespace mpaop::jp
 {
@@ -24,8 +25,8 @@ namespace mpaop::jp
     {
     public:
         static bool parseJsonString(const std::string & inStr, std::map<std::string, JsonToken> & parsedData);
-        static bool lexString(const std::string & inStr, std::vector<std::string> & lexedData);
-        static void convertData(std::vector<std::string> & lexedData, std::map<std::string, JsonToken> & parsedData);
+        static bool lexString(const std::string & inStr, std::queue<std::string> & lexedData);
+        static void convertData(std::queue<std::string> & lexedData, std::map<std::string, JsonToken> & parsedData);
 
     };
 
