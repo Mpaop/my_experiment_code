@@ -17,5 +17,11 @@ auto main() -> int
 
     std::map<std::string, mpaop::jp::JsonToken, std::less<>> parsedData;
     mpaop::jp::JsonParser::parseJsonString(str, parsedData);
+
+    for(auto & a : parsedData)
+    {
+        std::cout << a.first << std::endl;
+    }
+
     return 0;
 }

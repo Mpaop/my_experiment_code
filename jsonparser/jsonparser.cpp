@@ -2,9 +2,7 @@
 #include <iostream>
 #include <cstring>
 
-#define checkIt(it, str)  \
-    if (it == str.cend()) \
-    return false
+#define checkIt(it, str) if (it == str.cend()) return false
 
 namespace mpaop::jp
 {
@@ -132,20 +130,19 @@ namespace mpaop::jp
         JsonToken & outToken
     )
     {
-            outName = lexedData.front();
-            outName.pop_back();
-            lexedData.pop();
+        outName = lexedData.front();
+        outName.pop_back();
+        lexedData.pop();
 
-            if (strcmp(lexedData.front().c_str(), ":"))
-            {
-                ThrowWrongFormat false;
-            }
-            lexedData.pop();
+        if (strcmp(lexedData.front().c_str(), ":"))
+        {
+            ThrowWrongFormat false;
+        }
+        lexedData.pop();
 
-            std::string data = lexedData.front();
-            lexedData.pop();
-            char id = data.back();
-            data.pop_back();
+        std::string data = lexedData.front();
+        lexedData.pop();
+        char id = data.back();
 
         // s, b, n, i, d, {, [,
         if (id == 's')
@@ -158,7 +155,7 @@ namespace mpaop::jp
         }
         else if (id == 'n')
         {
-            outToken.string_ = nullptr;
+            outToken.isnull_ = true;
         }
         else if (id == 'i')
         {
@@ -170,15 +167,60 @@ namespace mpaop::jp
         }
         else if (id == '{')
         {
-            lexedData.pop();
+            outToken.object_ = std::map<std::string, JsonToken, std::less<>>();
             while(lexedData.front() != "}")
             {
-                
+                std::string n;
+                JsonToken t;
+                if(createToken(lexedData, n, t))
+                {
+                    auto it = outToken.object_.emplace(n, t);
+                    if(! it.second)
+                    {
+                        ThrowWrongFormat false;
+                    }
+                }   
+                else
+                {
+                    ThrowWrongFormat false;
+                }
             }
             lexedData.pop();
         }
         else if (id == '[')
         {
+            outToken.array_ = std::vector<std::map<std::string, JsonToken, std::less<>>>();
+            while(lexedData.front() != "]")
+            {
+                if(strcmp(lexedData.front().c_str(), "{"))
+                {
+                    ThrowWrongFormat false;
+                }
+                lexedData.pop();
+
+                std::map<std::string, JsonToken, std::less<>> map;
+                while(lexedData.front() != "}")
+                {
+                    std::string n;
+                    JsonToken t;
+                    if(createToken(lexedData, n, t))
+                    {
+                        auto it = map.emplace(n, t);
+                        if(! it.second)
+                        {
+                            ThrowWrongFormat false;
+                        }
+                    }
+                    else
+                    {
+                        ThrowWrongFormat false;
+                    }
+                    
+                    outToken.array_.emplace_back(map);
+                }
+                lexedData.pop();
+            }
+            lexedData.pop();
         }
         else
         {
@@ -211,7 +253,10 @@ namespace mpaop::jp
             if(createToken(lexedData, name, token))
             {
                 auto it = parsedData.emplace(name, token);
-                if(! it.second) ThrowWrongFormat;
+                if(! it.second)
+                {
+                    ThrowWrongFormat;
+                }
             }
             else
             {

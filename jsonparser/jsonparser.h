@@ -1,6 +1,5 @@
 #pragma once
 
-#include <utility>
 #include <string>
 #include <map>
 #include <vector>
@@ -9,17 +8,21 @@
 namespace mpaop::jp
 {
 
-    union JsonToken
+    struct JsonToken
     {
-        bool boolean_;
-        int64_t number_;
-        double double_;
-        std::string string_;
-        std::map<std::string, JsonToken, std::less<>> object_;
-        std::vector<std::map<std::string, JsonToken, std::less<>>> array_;
+        bool isnull_;
+        union 
+        {
+            bool boolean_;
+            int64_t number_;
+            double double_;
+            std::string string_;
+            std::map<std::string, JsonToken, std::less<>> object_;
+            std::vector<std::map<std::string, JsonToken, std::less<>>> array_;
+        };
 
-        JsonToken() : number_(0) {}
-        JsonToken(const JsonToken & token) : number_(token.number_) {}
+        JsonToken() : isnull_(false), number_(0) {}
+        JsonToken(const JsonToken & token) : isnull_(token.isnull_), number_(token.number_) {}
         ~JsonToken() {}
     };
 
