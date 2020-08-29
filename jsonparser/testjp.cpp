@@ -15,7 +15,7 @@ auto main() -> int
     str = ss.str();
     inFile.close();
 
-    std::map<std::string, mpaop::jp::JsonToken> parsedData;
+    std::map<std::string, mpaop::jp::JsonToken, std::less<>> parsedData;
     mpaop::jp::JsonParser::parseJsonString(str, parsedData);
     return 0;
 }

@@ -1,16 +1,20 @@
 #include "jsonparser.h"
 #include <iostream>
+#include <cstring>
 
-#define checkIt(it, str) if(it == str.cend()) return false
+#define checkIt(it, str)  \
+    if (it == str.cend()) \
+    return false
 
 namespace mpaop::jp
 {
     bool JsonParser::parseJsonString(
-        const std::string & inStr, 
-        std::map<std::string, JsonToken> & parsedData)
+        const std::string & inStr,
+        std::map<std::string, JsonToken, std::less<>> & parsedData)
     {
         std::queue<std::string> data;
-        if(! lexString(inStr, data)) return false;
+        if (!lexString(inStr, data))
+            return false;
 
         convertData(data, parsedData);
         return true;
@@ -18,88 +22,87 @@ namespace mpaop::jp
 
     bool JsonParser::lexString(
         const std::string & inStr,
-        std::queue<std::string> & lexedData
-    )
+        std::queue<std::string> & lexedData)
     {
         auto pos = inStr.find_first_of('{');
-        if(pos == std::string::npos) return false;
+        if (pos == std::string::npos)
+            return false;
 
-        for(auto it = inStr.cbegin() + pos; it != inStr.cend(); ++it)
+        for (auto it = inStr.cbegin() + pos; it != inStr.cend(); ++it)
         {
-            if(* it == EOF) break;
-            if(* it == ' ' || * it == ',' || * it == '\n' || * it == '\t') continue;
+            if (* it == EOF)
+                break;
+            if (* it == ' ' || * it == ',' || * it == '\n' || * it == '\t')
+                continue;
 
-            if(* it == '{' || * it == '}' || 
-               * it == '[' || * it == ']' || 
-               * it == ':')
+            if (* it == '{' || * it == '}' ||
+                * it == '[' || * it == ']' ||
+                * it == ':')
             {
                 lexedData.push(std::string(1, * it));
             }
-            else if(* it == '"')
+            else if (* it == '"')
             {
                 std::string t;
                 ++it;
-                while(* it != '"')
+                while (* it != '"')
                 {
                     t.push_back(* (it++));
                     checkIt(it, inStr);
                 }
-                if(t.empty()) return false;
+                if (t.empty())
+                    return false;
                 // identifier for string
                 t.push_back('s');
                 lexedData.push(t);
             }
-            else if(* it == 't' || * it == 'f' || * it == 'n')
+            else if (* it == 't' || * it == 'f' || * it == 'n')
             {
                 std::string comp;
-                char id;
+                std::string ins;
                 if (* it == 't')
                 {
                     comp = "true";
-                    id = 'b';
+                    ins = "1b";
                 }
                 else if (* it == 'f')
                 {
                     comp = "false";
-                    id = 'b';
+                    ins = "0b";
                 }
                 else
                 {
                     comp = "null";
-                    id = 'n';
+                    ins = "n";
                 }
 
                 int64_t sz = comp.size() - 1;
-                std::string t;
-                for(int32_t i = 0; i < sz; ++i)
+                for (int32_t i = 0; i < sz; ++i)
                 {
-                    t.push_back(* (it++));
-                    checkIt(it, inStr);
-                    if(* it != comp[i + 1]) return false;
+                    checkIt(++it, inStr);
+                    if (* it != comp[i + 1]) return false;
                 }
-                t.push_back(* it);
-                t.push_back(id);
-                lexedData.push(t);
+                lexedData.push(ins);
             }
-            else if(* it >= '0' && * it <= '9')
+            else if (* it >= '0' && * it <= '9')
             {
                 std::string num;
                 char id = 'i';
                 bool isDouble = false;
-                while(true)
+                while (true)
                 {
-                    if(* it >= '0' && * it <= '9')
+                    if (* it >= '0' && * it <= '9')
                     {
                         num.push_back(* (it++));
                     }
-                    else if(* it == '.')
+                    else if (* it == '.')
                     {
-                        if(isDouble) return false;
+                        if (isDouble) return false;
                         else
                         {
                             isDouble = true;
                             id = 'd';
-                            num.push_back(* (it++));
+                            num.push_back(*(it++));
                         }
                     }
                     else
@@ -114,7 +117,7 @@ namespace mpaop::jp
             }
             else
             {
-                return false;   
+                return false;
             }
         }
 
@@ -123,14 +126,76 @@ namespace mpaop::jp
 
 #define ThrowWrongFormat std::cout << "wrong format\n"; return
 
-    void JsonParser::convertData(
-        std::queue<std::string> & lexedData, 
-        std::map<std::string, JsonToken> & parsedData
+    bool JsonParser::createToken(
+        std::queue<std::string> & lexedData,
+        std::string & outName,
+        JsonToken & outToken
     )
     {
+            outName = lexedData.front();
+            outName.pop_back();
+            lexedData.pop();
+
+            if (strcmp(lexedData.front().c_str(), ":"))
+            {
+                ThrowWrongFormat false;
+            }
+            lexedData.pop();
+
+            std::string data = lexedData.front();
+            lexedData.pop();
+            char id = data.back();
+            data.pop_back();
+
+        // s, b, n, i, d, {, [,
+        if (id == 's')
+        {
+            outToken.string_ = data;
+        }
+        else if (id == 'b')
+        {
+            outToken.boolean_ = data[0] == '1' ? true : false;
+        }
+        else if (id == 'n')
+        {
+            outToken.string_ = nullptr;
+        }
+        else if (id == 'i')
+        {
+            outToken.number_ = std::atoi(data.c_str());
+        }
+        else if (id == 'd')
+        {
+            outToken.double_ = std::atof(data.c_str());
+        }
+        else if (id == '{')
+        {
+            lexedData.pop();
+            while(lexedData.front() != "}")
+            {
+                
+            }
+            lexedData.pop();
+        }
+        else if (id == '[')
+        {
+        }
+        else
+        {
+            ThrowWrongFormat false;
+        }
+
+        return true;
+    }
+
+    void JsonParser::convertData(
+        std::queue<std::string> & lexedData,
+        std::map<std::string, JsonToken, std::less<>> & parsedData)
+    {
         auto sz = lexedData.size();
-        if(sz <= 2) return;
-        else if(strcmp(lexedData.front().c_str(), "{") || strcmp(lexedData.back().c_str(), "}"))
+        if (sz <= 2)
+            return;
+        else if (strcmp(lexedData.front().c_str(), "{") || strcmp(lexedData.back().c_str(), "}"))
         {
             ThrowWrongFormat;
         }
@@ -138,25 +203,20 @@ namespace mpaop::jp
         // pop first {
         lexedData.pop();
 
-        while(lexedData.size() > 1)
+        while (lexedData.size() > 1)
         {
-            // get name of attribute
-            std::string name = lexedData.front();
-            name.pop_back();
-            lexedData.pop();
-            
-            if(strcmp(lexedData.front().c_str(), ":"))
+            std::string name;
+            JsonToken token;
+
+            if(createToken(lexedData, name, token))
+            {
+                auto it = parsedData.emplace(name, token);
+                if(! it.second) ThrowWrongFormat;
+            }
+            else
             {
                 ThrowWrongFormat;
             }
-            lexedData.pop();
-
-            // create token
-            JsonToken token;
-            char id = lexedData.front().back();
-
-            
-
         }
     }
 }
