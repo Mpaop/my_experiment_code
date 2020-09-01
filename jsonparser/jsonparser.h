@@ -4,6 +4,8 @@
 #include <map>
 #include <vector>
 #include <queue>
+#include <memory>
+#include <variant>
 
 namespace mpaop::jp
 {
@@ -11,18 +13,20 @@ namespace mpaop::jp
     struct JsonToken
     {
         bool isnull_;
-        union 
-        {
-            bool boolean_;
-            int64_t number_;
-            double double_;
-            std::string string_;
-            std::map<std::string, JsonToken, std::less<>> object_;
-            std::vector<std::map<std::string, JsonToken, std::less<>>> array_;
-        };
+        using object_type = std::shared_ptr<std::map<std::string, JsonToken, std::less<>>>;
+        using array_type = std::shared_ptr<std::vector<std::map<std::string, JsonToken, std::less<>>>>;
 
-        JsonToken() : isnull_(false), number_(0) {}
-        JsonToken(const JsonToken & token) : isnull_(token.isnull_), number_(token.number_) {}
+        std::variant<
+            bool, 
+            int64_t, 
+            double, 
+            std::string, 
+            object_type,
+            array_type
+            > val_;
+
+        JsonToken() : isnull_(false), val_() {}
+        JsonToken(const JsonToken & token) : isnull_(token.isnull_), val_(token.val_) {}
         ~JsonToken() {}
     };
 

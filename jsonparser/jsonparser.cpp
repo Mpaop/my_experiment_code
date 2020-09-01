@@ -151,11 +151,11 @@ namespace mpaop::jp
         // s, b, n, i, d, {, [,
         if (id == 's')
         {
-            outToken.string_ = data;
+            outToken.val_ = data;
         }
         else if (id == 'b')
         {
-            outToken.boolean_ = data[0] == '1' ? true : false;
+            outToken.val_ = data[0] == '1' ? true : false;
         }
         else if (id == 'n')
         {
@@ -163,22 +163,22 @@ namespace mpaop::jp
         }
         else if (id == 'i')
         {
-            outToken.number_ = std::atoi(data.c_str());
+            outToken.val_ = static_cast<int64_t>(std::atoi(data.c_str()));
         }
         else if (id == 'd')
         {
-            outToken.double_ = std::atof(data.c_str());
+            outToken.val_ = std::atof(data.c_str());
         }
         else if (id == '{')
         {
-            outToken.object_ = std::map<std::string, JsonToken, std::less<>>();
+            outToken.val_ = std::make_shared<std::map<std::string, JsonToken, std::less<>>>();
             while(lexedData.front() != "}")
             {
                 std::string n;
                 JsonToken t;
                 if(createToken(lexedData, n, t))
                 {
-                    auto it = outToken.object_.emplace(n, t);
+                    auto it = std::get<JsonToken::object_type>(outToken.val_)->emplace(n, t);
                     if(! it.second)
                     {
                         ThrowWrongFormat false;
@@ -193,7 +193,7 @@ namespace mpaop::jp
         }
         else if (id == '[')
         {
-            outToken.array_ = std::vector<std::map<std::string, JsonToken, std::less<>>>();            
+            outToken.val_ = std::make_shared<std::vector<std::map<std::string, JsonToken, std::less<>>>>();
             while(lexedData.front() != "]")
             {
                 if(strcmp(lexedData.front().c_str(), "{"))
@@ -219,7 +219,7 @@ namespace mpaop::jp
                     {
                         ThrowWrongFormat false;
                     }
-                    outToken.array_.emplace_back(map);
+                    std::get<JsonToken::array_type>(outToken.val_)->emplace_back(map);
                 }
                 lexedData.pop();
             }
