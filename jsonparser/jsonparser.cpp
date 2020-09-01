@@ -48,6 +48,7 @@ namespace mpaop::jp
                     t.push_back(* (it++));
                     checkIt(it, inStr);
                 }
+                
                 if (t.empty())
                     return false;
                 // identifier for string
@@ -91,7 +92,7 @@ namespace mpaop::jp
                 {
                     if (* it >= '0' && * it <= '9')
                     {
-                        num.push_back(* (it++));
+                        num.push_back(* it);
                     }
                     else if (* it == '.')
                     {
@@ -100,15 +101,17 @@ namespace mpaop::jp
                         {
                             isDouble = true;
                             id = 'd';
-                            num.push_back(*(it++));
+                            num.push_back(* it);
                         }
                     }
                     else
                     {
+                        --it;
                         break;
                     }
+                    
 
-                    checkIt(it, inStr);
+                    checkIt(++it, inStr);
                 }
                 num.push_back(id);
                 lexedData.push(num);
@@ -143,6 +146,7 @@ namespace mpaop::jp
         std::string data = lexedData.front();
         lexedData.pop();
         char id = data.back();
+        data.pop_back();
 
         // s, b, n, i, d, {, [,
         if (id == 's')
@@ -189,7 +193,7 @@ namespace mpaop::jp
         }
         else if (id == '[')
         {
-            outToken.array_ = std::vector<std::map<std::string, JsonToken, std::less<>>>();
+            outToken.array_ = std::vector<std::map<std::string, JsonToken, std::less<>>>();            
             while(lexedData.front() != "]")
             {
                 if(strcmp(lexedData.front().c_str(), "{"))
@@ -215,7 +219,6 @@ namespace mpaop::jp
                     {
                         ThrowWrongFormat false;
                     }
-                    
                     outToken.array_.emplace_back(map);
                 }
                 lexedData.pop();
