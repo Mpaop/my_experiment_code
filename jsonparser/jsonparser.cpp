@@ -1,6 +1,7 @@
 #include "jsonparser.h"
 #include <iostream>
 #include <cstring>
+#include <charconv>
 
 #define checkIt(it, str) if (it == str.cend()) return false
 
@@ -151,34 +152,38 @@ namespace mpaop::jp
         // s, b, n, i, d, {, [,
         if (id == 's')
         {
-            outToken.val_ = data;
+            outToken.token_ = data;
         }
         else if (id == 'b')
         {
-            outToken.val_ = data[0] == '1' ? true : false;
+            outToken.token_ = data[0] == '1' ? true : false;
         }
         else if (id == 'n')
         {
-            outToken.isnull_ = true;
+            outToken.token_ = std::nullopt;
         }
         else if (id == 'i')
         {
-            outToken.val_ = static_cast<int64_t>(std::atoi(data.c_str()));
+            int64_t res;
+            if(auto [p, e] = std::from_chars(data.data(), data.data() + data.size(), res); e == std::errc())
+            {
+                outToken.token_ = res;
+            }
         }
         else if (id == 'd')
         {
-            outToken.val_ = std::atof(data.c_str());
+            outToken.token_ = std::atof(data.c_str());
         }
         else if (id == '{')
         {
-            outToken.val_ = std::make_shared<std::map<std::string, JsonToken, std::less<>>>();
+            outToken.token_ = std::make_shared<std::map<std::string, JsonToken, std::less<>>>();
             while(lexedData.front() != "}")
             {
                 std::string n;
                 JsonToken t;
                 if(createToken(lexedData, n, t))
                 {
-                    auto it = std::get<JsonToken::object_type>(outToken.val_)->emplace(n, t);
+                    auto it = std::get<JsonToken::object_type>(outToken.token_.value())->emplace(n, t);
                     if(! it.second)
                     {
                         ThrowWrongFormat false;
@@ -193,7 +198,7 @@ namespace mpaop::jp
         }
         else if (id == '[')
         {
-            outToken.val_ = std::make_shared<std::vector<std::map<std::string, JsonToken, std::less<>>>>();
+            outToken.token_ = std::make_shared<std::vector<std::map<std::string, JsonToken, std::less<>>>>();
             while(lexedData.front() != "]")
             {
                 if(strcmp(lexedData.front().c_str(), "{"))
@@ -219,7 +224,7 @@ namespace mpaop::jp
                     {
                         ThrowWrongFormat false;
                     }
-                    std::get<JsonToken::array_type>(outToken.val_)->emplace_back(map);
+                    std::get<JsonToken::array_type>(outToken.token_.value())->emplace_back(map);
                 }
                 lexedData.pop();
             }

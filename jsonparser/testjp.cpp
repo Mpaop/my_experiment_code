@@ -19,7 +19,8 @@ auto main() -> int
 
     for(auto & a : parsedData)
     {
-        std::cout << a.first << std::endl;
+        if(a.second.hasValue()) std::cout << a.first << " has value.\n";
+        else std::cout << a.first << " does not have value.\n";
     }
 
     return 0;
