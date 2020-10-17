@@ -9,7 +9,6 @@ auto main() -> int
     int throws;
     std::cout << "Number of throws: ";
     std::cin >> throws;
-    std::cout << std::flush;
 
     // random generator
     std::random_device dev;
