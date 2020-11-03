@@ -17,7 +17,7 @@ void printArray(int * array)
 {
     for (int i = 0; i < SIZE; ++i)
     {
-        if ((i % 4) == 0) std::cout << "\n";
+        if ((i % DIM) == 0) std::cout << "\n";
         std::cout << (array[i] ? 'o' : 'x');
     }
 }
@@ -25,25 +25,24 @@ void printArray(int * array)
 template<typename func>
 void rotate(int * res, int * array, func f)
 {
-    int colNum = DIM - 1;
     for (int i = 0; i < SIZE; ++i)
     {
         int x = i % DIM;
-        int y = (i - x) / DIM;
+        int y = i / DIM;
         res[f(x, y)] = array[i];
     }
 }
 
 void rotateRight(int * res, int * array)
 {
-    auto lambda = [](int x, int y) { return (DIM - 1 - y) + x * DIM; };
+    auto lambda = [](const int & x, const int & y) { return (DIM - 1 - y) + x * DIM; };
 
     rotate(res, array, lambda);
 }
 
 void rotateLeft(int * res, int * array)
 {
-    auto lambda = [](int x, int y) { return (DIM - 1 - x) * DIM + y; };
+    auto lambda = [](const int & x, const int & y) { return (DIM - 1 - x) * DIM + y; };
 
     rotate(res, array, lambda);
 }
