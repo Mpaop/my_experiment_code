@@ -29,20 +29,21 @@ void rotate(int * res, int * array, func f)
     {
         int x = i % DIM;
         int y = i / DIM;
-        res[f(x, y)] = array[i];
+        res[i] = array[f(x, y)];
     }
 }
 
 void rotateRight(int * res, int * array)
 {
-    auto lambda = [](const int & x, const int & y) { return (DIM - 1 - y) + x * DIM; };
+   auto lambda = [&](const int & x, const int & y) { return (DIM * (DIM - 1)) - (x * DIM) + y; };
 
     rotate(res, array, lambda);
 }
 
 void rotateLeft(int * res, int * array)
 {
-    auto lambda = [](const int & x, const int & y) { return (DIM - 1 - x) * DIM + y; };
+    auto lambda = [&](const int & x, const int & y) { return (DIM - 1 - y) + x * DIM; };
+ 
 
     rotate(res, array, lambda);
 }
