@@ -24,7 +24,7 @@ int main()
 #ifdef _WIN32
     system("commit.bat");
 #else
-    system("chmod a+x commit");
+    system("chmod 755 commit");
     system("./commit");
 #endif
 
