@@ -41,14 +41,14 @@ void rotate(int res[][DIM], int array[][DIM], func f)
 void rotateRight(int res[][DIM], int array[][DIM])
 {
     int col = DIM - 1;
-    auto lambda = [&](int i, int k) { res[k][col - i] = array[i][k]; };
+    auto lambda = [&](int i, int k) { res[i][k] = array[col - k][i]; };
     rotate(res, array, lambda);
 }
 
 void rotateLeft(int res[][DIM], int array[][DIM])
 {
     int col = DIM - 1;
-    auto lambda = [&](int i, int k) { res[col - k][i] = array[i][k]; };
+    auto lambda = [&](int i, int k) { res[i][k] = array[k][col - i]; };
     rotate(res, array, lambda);
 }
 
