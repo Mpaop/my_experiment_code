@@ -6,8 +6,12 @@ int main()
 {
     std::ofstream file;
     std::string commitMessage;
-
+    
+#ifdef _WIN32
     file.open("commit.bat");
+#else
+    file.open("commit");
+#endif
 
     std::cout << "Please write a summary of what you did in this commit:";
     std::getline(std::cin, commitMessage);
@@ -17,7 +21,12 @@ int main()
 
     file.close();
 
+#ifdef _WIN32
     system("commit.bat");
+#else
+    system("chmod a+x commit");
+    system("./commit");
+#endif
 
     return 0;
 }
