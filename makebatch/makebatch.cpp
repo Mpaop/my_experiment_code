@@ -26,8 +26,8 @@ int main()
 #ifdef _WIN32
     system("commit.bat");
 #elif __APPLE__
-        system("chmod 755 commit.command");
-        system("./commit.command");
+    system("chmod 755 commit.command");
+    system("./commit.command");
 #else
     system("chmod 755 commit");
     system("./commit");
