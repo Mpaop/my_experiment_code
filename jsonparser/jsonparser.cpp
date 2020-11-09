@@ -128,14 +128,13 @@ namespace mpaop::jp
 
 #define ThrowWrongFormat std::cout << "wrong format\n"; return
 
-    bool JsonParser::createToken(
-        std::queue<std::string> & lexedData,
-        std::string & outName,
-        JsonToken & outToken
+    bool JsonParser::findId(
+        std::queue<std::string> & lexedData, 
+        std::string & outId
     )
     {
-        outName = lexedData.front();
-        outName.pop_back();
+        outId = lexedData.front();
+        outId.pop_back();
         lexedData.pop();
 
         if (strcmp(lexedData.front().c_str(), ":"))
@@ -144,6 +143,14 @@ namespace mpaop::jp
         }
         lexedData.pop();
 
+        return true;
+    }
+
+    bool JsonParser::findToken(
+        std::queue<std::string> & lexedData, 
+        JsonToken & outToken
+    )
+    {
         std::string data = lexedData.front();
         lexedData.pop();
         char id = data.back();
@@ -176,7 +183,7 @@ namespace mpaop::jp
         }
         else if (id == '{')
         {
-            outToken.token_ = std::make_shared<std::map<std::string, JsonToken, std::less<>>>();
+            outToken.token_ = std::make_shared<JsonToken::object>();
             while(lexedData.front() != "}")
             {
                 std::string n;
@@ -198,36 +205,22 @@ namespace mpaop::jp
         }
         else if (id == '[')
         {
-            outToken.token_ = std::make_shared<std::vector<std::map<std::string, JsonToken, std::less<>>>>();
-            while(lexedData.front() != "]")
+            // in case of an array of json objects
+            JsonToken::array_type array = std::make_shared<std::vector<JsonToken>>();
+            while (lexedData.front() != "]")
             {
-                if(strcmp(lexedData.front().c_str(), "{"))
+                JsonToken token;
+                if(findToken(lexedData, token))
+                {
+                    array->emplace_back(token);
+                }
+                else
                 {
                     ThrowWrongFormat false;
                 }
-                lexedData.pop();
-
-                std::map<std::string, JsonToken, std::less<>> map;
-                while(lexedData.front() != "}")
-                {
-                    std::string n;
-                    JsonToken t;
-                    if(createToken(lexedData, n, t))
-                    {
-                        auto it = map.emplace(n, t);
-                        if(! it.second)
-                        {
-                            ThrowWrongFormat false;
-                        }
-                    }
-                    else
-                    {
-                        ThrowWrongFormat false;
-                    }
-                    std::get<JsonToken::array_type>(outToken.token_.value())->emplace_back(map);
-                }
-                lexedData.pop();
             }
+
+            outToken.token_ = array;
             lexedData.pop();
         }
         else
@@ -236,6 +229,19 @@ namespace mpaop::jp
         }
 
         return true;
+    }
+
+    bool JsonParser::createToken(
+        std::queue<std::string> & lexedData,
+        std::string & outId,
+        JsonToken & outToken
+    )
+    {
+        bool res = false;
+        res = findId(lexedData, outId);
+        if(! res) return res;
+        res = findToken(lexedData, outToken);
+        return res;
     }
 
     void JsonParser::convertData(
@@ -270,6 +276,135 @@ namespace mpaop::jp
             {
                 ThrowWrongFormat;
             }
+        }
+    }
+
+#define INDENT(max) for (int i = 0; i < max; ++i) { std::cout << "\t"; }
+
+    void JsonParser::printBool(
+        const mpaop::jp::JsonToken & token, 
+        int depth
+    )
+    {
+        INDENT(depth)
+        std::cout << std::get<bool>(token.token_.value()) << "\n";
+    }
+
+    void JsonParser::printInteger(
+        const mpaop::jp::JsonToken & token, 
+        int depth
+    )
+    {
+        INDENT(depth)
+        std::cout << std::get<int64_t>(token.token_.value()) << "\n";
+    }
+
+    void JsonParser::printDouble(
+        const mpaop::jp::JsonToken & token, 
+        int depth
+    )
+    {
+        INDENT(depth)
+        std::cout << std::get<double>(token.token_.value()) << "\n";
+    }
+
+    void JsonParser::printString(
+        const mpaop::jp::JsonToken & token, 
+        int depth
+    )
+    {
+        INDENT(depth)
+        std::cout << std::get<std::string>(token.token_.value()) << "\n";
+    }
+
+    void JsonParser::printObject(
+        const mpaop::jp::JsonToken & token, 
+        int depth
+    )
+    {
+        auto & map = std::get<JsonToken::object_type>(token.token_.value());
+        auto d = depth + 1;
+
+        INDENT(d)
+        std::cout << "{\n";
+
+        for (auto &e : * map)
+        {
+            printId(e.first, d);
+            printToken(e.second, d);
+        }
+
+        INDENT(d)
+        std::cout << "}\n";
+    }
+
+    void JsonParser::printArray(
+        const mpaop::jp::JsonToken & token, 
+        int depth
+    )
+    {
+        auto & array = std::get<JsonToken::array_type>(token.token_.value());
+        auto d = depth + 1;
+
+        INDENT(d)
+        std::cout << "[\n";
+
+        for (auto & obj : * array)
+        {
+            printToken(obj, d);
+        }
+
+        INDENT(d)
+        std::cout << "]\n";
+    }
+
+    void JsonParser::printId(
+        const std::string & id, 
+        int depth
+    )
+    {
+        INDENT(depth)
+        std::cout << id << ": \n";
+    }
+
+    void JsonParser::printToken(
+        const mpaop::jp::JsonToken & token, 
+        int depth
+    )
+    {
+        const int idx = token.token_->index();
+
+        switch(idx)
+        {
+            case 0:
+                printBool(token, depth);
+                break;
+            case 1:
+                printInteger(token, depth);
+                break;
+            case 2:
+                printDouble(token, depth);
+                break;
+            case 3:
+                printString(token, depth);
+                break;
+            case 4:
+                printObject(token, depth);
+                break;
+            case 5:
+                printArray(token, depth);
+                break;
+            default:
+                break;
+        }
+    }
+
+    void JsonParser::printParsedJsonData(const std::map<std::string, mpaop::jp::JsonToken, std::less<>> & parsedData)
+    {
+        for(auto & token : parsedData)
+        {
+            printId(token.first, 0);
+            printToken(token.second, 0);
         }
     }
 }

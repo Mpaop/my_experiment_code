@@ -3,12 +3,14 @@
 #include <sstream>
 #include <iostream>
 
+
+
 auto main() -> int
 {
     std::string str;
 
     std::ifstream inFile;
-    inFile.open("./jsonparser/test.json");
+    inFile.open("./jsonparser/glTFTutorial_MinimalglTFFile.json");
     std::stringstream ss;
     ss << inFile.rdbuf();
     str = ss.str();
@@ -17,11 +19,7 @@ auto main() -> int
     std::map<std::string, mpaop::jp::JsonToken, std::less<>> parsedData;
     mpaop::jp::JsonParser::parseJsonString(str, parsedData);
 
-    for(auto & a : parsedData)
-    {
-        if(a.second.hasValue()) std::cout << a.first << " has value.\n";
-        else std::cout << a.first << " does not have value.\n";
-    }
+    mpaop::jp::JsonParser::printParsedJsonData(parsedData);
 
     return 0;
 }
