@@ -10,7 +10,7 @@ auto main() -> int
     std::string str;
 
     std::ifstream inFile;
-    inFile.open("./jsonparser/glTFTutorial_MinimalglTFFile.json");
+    inFile.open("./jsonparser/test.json");
     std::stringstream ss;
     ss << inFile.rdbuf();
     str = ss.str();
