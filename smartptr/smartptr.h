@@ -11,7 +11,7 @@ namespace mpaop::smartptr
         T * m_ptr;
         uint32_t * m_refCount;
 
-        MSharedPtr() : m_ptr(nullptr), m_refCount(nullptr) {}
+        MSharedPtr() = delete;
 
     public:
         template<class... Args>
@@ -67,8 +67,16 @@ namespace mpaop::smartptr
     private:
         inline void cleanup()
         {
-            if(m_ptr) delete m_ptr;
-            if(m_refCount) delete m_refCount;
+            if(m_ptr)
+            {
+                delete m_ptr;
+                m_ptr = nullptr;
+            }
+            if(m_refCount)
+            {
+                delete m_refCount;
+                m_refCount = nullptr;
+            }
             std::cout << "deleted ptr\n";
         }
     };
