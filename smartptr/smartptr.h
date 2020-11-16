@@ -51,7 +51,7 @@ namespace mpaop::smartptr
         }
 
     public:
-        MSharedPtr<T>() : m_ptr(nullptr), m_refCount(nullptr)
+        MSharedPtr<T>(std::nullptr_t) : m_ptr(nullptr), m_refCount(nullptr)
         {
             std::cout << "Calling empty constructor\n";
         }
@@ -106,7 +106,7 @@ namespace mpaop::smartptr
         }
 
         MSharedPtr<T> & operator=(const MSharedPtr<T> & pt);
-        std::nullptr_t operator=(std::nullptr_t * p);
+        std::nullptr_t operator=(std::nullptr_t);
 
         T * get() const
         {
@@ -150,7 +150,7 @@ namespace mpaop::smartptr
     }
 
     template<typename T>
-    std::nullptr_t MSharedPtr<T>::operator=(std::nullptr_t * p)
+    std::nullptr_t MSharedPtr<T>::operator=(std::nullptr_t)
     {
         this->release();
 

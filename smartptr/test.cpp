@@ -4,7 +4,7 @@
 int main()
 {
     std::cout << "a\n";
-    mpaop::smartptr::MSharedPtr<uint32_t> m;
+    mpaop::smartptr::MSharedPtr<uint32_t> m(nullptr);
         std::cout << "b\n";
     m = nullptr;
 
