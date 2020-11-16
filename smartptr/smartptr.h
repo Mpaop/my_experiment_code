@@ -11,8 +11,6 @@ namespace mpaop::smartptr
         T * m_ptr;
         uint32_t * m_refCount;
 
-        MSharedPtr() = delete;
-
     public:
         template<class... Args>
         MSharedPtr<T>(Args... args)
