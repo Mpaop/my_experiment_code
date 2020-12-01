@@ -84,11 +84,18 @@ namespace mpaop::jp
                 }
                 lexedData.push(ins);
             }
-            else if (* it >= '0' && * it <= '9')
+            else if (* it >= '0' && * it <= '9' || * it == '-')
             {
                 std::string num;
                 char id = 'i';
                 bool isDouble = false;
+
+                if(* it == '-')
+                {
+                    num.push_back(* it);
+                    checkIt(++it, inStr);
+                }
+
                 while (true)
                 {
                     if (* it >= '0' && * it <= '9')

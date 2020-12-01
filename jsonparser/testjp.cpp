@@ -3,8 +3,6 @@
 #include <sstream>
 #include <iostream>
 
-
-
 auto main() -> int
 {
     std::string str;
