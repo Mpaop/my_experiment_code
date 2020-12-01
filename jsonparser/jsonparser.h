@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 #include <map>
 #include <vector>
 #include <queue>
@@ -41,12 +42,8 @@ namespace mpaop::jp
         static bool findId(std::queue<std::string> & lexedData, std::string & outId);
         static bool findToken(std::queue<std::string> & lexedData, JsonToken & outToken);
 
-        static void printBool(const mpaop::jp::JsonToken & token, int depth);
-        static void printInteger(const mpaop::jp::JsonToken & token, int depth);
-        static void printDouble(const mpaop::jp::JsonToken & token, int depth);
-        static void printString(const mpaop::jp::JsonToken & token, int depth);
-        static void printObject(const mpaop::jp::JsonToken & token, int depth);
-        static void printArray(const mpaop::jp::JsonToken & token, int depth);
+        template<typename T>
+        static void printValue(const mpaop::jp::JsonToken & token, int depth);
 
         static void printId(const std::string & id, int depth);
         static void printToken(const mpaop::jp::JsonToken & token, int depth);

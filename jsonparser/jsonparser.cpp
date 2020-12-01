@@ -1,5 +1,4 @@
 #include "jsonparser.h"
-#include <iostream>
 #include <cstring>
 #include <charconv>
 
@@ -288,43 +287,17 @@ namespace mpaop::jp
 
 #define INDENT(max) for (int i = 0; i < max; ++i) { std::cout << "\t"; }
 
-    void JsonParser::printBool(
+    template<typename T>
+    void JsonParser::printValue(
         const mpaop::jp::JsonToken & token, 
-        int depth
-    )
+        int depth)
     {
         INDENT(depth)
-        std::cout << std::get<bool>(token.token_.value()) << "\n";
+        std::cout << std::get<T>(token.token_.value()) << "\n";
     }
 
-    void JsonParser::printInteger(
-        const mpaop::jp::JsonToken & token, 
-        int depth
-    )
-    {
-        INDENT(depth)
-        std::cout << std::get<int64_t>(token.token_.value()) << "\n";
-    }
-
-    void JsonParser::printDouble(
-        const mpaop::jp::JsonToken & token, 
-        int depth
-    )
-    {
-        INDENT(depth)
-        std::cout << std::get<double>(token.token_.value()) << "\n";
-    }
-
-    void JsonParser::printString(
-        const mpaop::jp::JsonToken & token, 
-        int depth
-    )
-    {
-        INDENT(depth)
-        std::cout << std::get<std::string>(token.token_.value()) << "\n";
-    }
-
-    void JsonParser::printObject(
+    template<>
+    void JsonParser::printValue<JsonToken::object_type>(
         const mpaop::jp::JsonToken & token, 
         int depth
     )
@@ -345,7 +318,8 @@ namespace mpaop::jp
         std::cout << "}\n";
     }
 
-    void JsonParser::printArray(
+    template<>
+    void JsonParser::printValue<JsonToken::array_type>(
         const mpaop::jp::JsonToken & token, 
         int depth
     )
@@ -384,22 +358,22 @@ namespace mpaop::jp
         switch(idx)
         {
             case 0:
-                printBool(token, depth);
+                printValue<bool>(token, depth);
                 break;
             case 1:
-                printInteger(token, depth);
+                printValue<int64_t>(token, depth);
                 break;
             case 2:
-                printDouble(token, depth);
+                printValue<double>(token, depth);
                 break;
             case 3:
-                printString(token, depth);
+                printValue<std::string>(token, depth);
                 break;
             case 4:
-                printObject(token, depth);
+                printValue<JsonToken::object_type>(token, depth);
                 break;
             case 5:
-                printArray(token, depth);
+                printValue<JsonToken::array_type>(token, depth);
                 break;
             default:
                 break;
