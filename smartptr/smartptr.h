@@ -11,15 +11,6 @@ namespace mpaop::smartptr
         T * m_ptr;
         uint32_t * m_refCount;
 
-        template <class... Args>
-        MSharedPtr<T>(Args... args)
-        {
-            m_ptr = new T(args...);
-            m_refCount = new uint32_t(1);
-
-            std::cout << "Calling constructor\n";
-        }
-
         void incRefCount() noexcept
         {
             if(m_refCount)
@@ -45,28 +36,44 @@ namespace mpaop::smartptr
             incRefCount();
         }
 
-        explicit MSharedPtr(T * p, uint32_t * ref) : m_ptr(p), m_refCount(ref)
-        {
-            incRefCount();
-        }
-
     public:
         MSharedPtr<T>(std::nullptr_t) : m_ptr(nullptr), m_refCount(nullptr)
         {
             std::cout << "Calling empty constructor\n";
         }
 
-        explicit MSharedPtr<T>(const MSharedPtr<T> & sp) : m_ptr(sp.m_ptr), m_refCount(sp.m_refCount)
+        MSharedPtr<T>(const MSharedPtr<T> & sp) : m_ptr(sp.m_ptr), m_refCount(sp.m_refCount)
         {
             // increment reference count
             std::cout << "Calling Copy Constructor\n";
             incRefCount();
         }
 
+        template<class Derived>
+        MSharedPtr<T>(const MSharedPtr<Derived> & sp) noexcept
+        {
+            if (std::is_base_of<T, Derived>())
+            {
+                m_ptr = sp.m_ptr;
+                m_refCount = sp.m_refCount;
+                incRefCount();
+                std::cout << "called derived copy constructor\n";
+            }
+            else
+            {
+                m_ptr = nullptr;
+                m_refCount = nullptr;
+            }
+        }
+
         template <class... Args>
         static MSharedPtr<T> create(Args... args)
         {
-            return MSharedPtr<T>(args...);
+            MSharedPtr<T> res(nullptr);
+            res.m_ptr = new T(args...);
+            res.m_refCount = new uint32_t(1);
+
+            return res;
         }
 
         void release()
@@ -74,7 +81,7 @@ namespace mpaop::smartptr
             if (m_ptr)
             {
                 decRefCount();
-                std::cout << "refCount: " << * m_refCount << " of val = " << * m_ptr << "\n" << std::flush;
+                std::cout << "refCount: " << * m_refCount << " of val = " << m_ptr << "\n" << std::flush;
 
                 if (0 == * m_refCount) cleanup();
 
@@ -133,6 +140,9 @@ namespace mpaop::smartptr
             }
             std::cout << "deleted ptr\n";
         }
+
+        template<typename>
+        friend class MSharedPtr;
     };
 
     template<typename T>

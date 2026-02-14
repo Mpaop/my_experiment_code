@@ -1,6 +1,20 @@
 #include <iostream>
 #include "smartptr.h"
 
+class A
+{
+    int _a;
+
+public:
+    A(int i) : _a(i) {}
+};
+
+class B : public A
+{
+public:
+    B(int i) : A(i) {}
+};
+
 int main()
 {
     std::cout << "a\n";
@@ -27,6 +41,12 @@ int main()
     o = o;
 
     std::cout << "h\n";
+
+    mpaop::smartptr::MSharedPtr<A> a(mpaop::smartptr::MSharedPtr<A>::create(1));
+
+    mpaop::smartptr::MSharedPtr<B> b(mpaop::smartptr::MSharedPtr<B>::create(2));
+
+    mpaop::smartptr::MSharedPtr<A> a2(b);
 
     return 0;
 }
