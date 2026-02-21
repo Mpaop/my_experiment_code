@@ -3,4 +3,6 @@
 *.json
 *.bat
 *.command
+*.txt
 .vscode/
+test/
