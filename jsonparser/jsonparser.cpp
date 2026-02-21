@@ -111,6 +111,13 @@ namespace mpaop::jp
                             num.push_back(* it);
                         }
                     }
+                    else if (isDouble &&
+							(* it == 'e' || * it == 'E') &&
+							(* (it + 1) == '+' || * (it + 1) == '-')) 
+                    {
+						num.push_back (* it);
+						num.push_back (* (++it));
+					}
                     else
                     {
                         --it;
